@@ -57,6 +57,8 @@ const CATALOGO = [
   {codigo:"CH2", nombre:"Chipitas 250gr",            categoria:"Confitería",  precio:13500, iva:10},
 ];
 
+const FCLI_INIT = {ruc:"",razonSocial:"",nombreFantasia:"",zona:"",direccion:"",telefono:"",contacto:"",frecuencia:"semanal",observaciones:"",lat:"",lng:""};
+
 const USUARIOS_INIT = [
   {id:"admin", nombre:"Administrador",      rol:"admin",    pin:"0000"},
   {id:"ruben", nombre:"Rubén",              rol:"admin",    pin:"1234"},
@@ -300,7 +302,6 @@ export default function App() {
   const [detPed,    setDetPed]    = useState(null);
   const [confirm,   setConfirm]   = useState(null);
   const [toast,     setToast]     = useState(null);
-  const FCLI_INIT = {ruc:"",razonSocial:"",nombreFantasia:"",zona:"",direccion:"",telefono:"",contacto:"",frecuencia:"semanal",observaciones:"",lat:"",lng:""};
   const [fCli,      setFCli]      = useState(FCLI_INIT);
   const [login,     setLogin]     = useState({userId:"",pin:""});
 
@@ -373,8 +374,6 @@ export default function App() {
   };
 
   // ── CLIENTES ───────────────────────────────────────────────────
-  const FCLI_INIT = {ruc:"",razonSocial:"",nombreFantasia:"",zona:"",direccion:"",telefono:"",contacto:"",frecuencia:"semanal",observaciones:"",lat:"",lng:""};
-
   const guardarCli=()=>{
     if(!fCli.ruc||!fCli.razonSocial){msg("RUC y razón social requeridos","err");return;}
     if(clientes.find(c=>c.ruc===fCli.ruc)){msg("RUC ya existe","err");return;}
