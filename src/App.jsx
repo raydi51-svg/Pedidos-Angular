@@ -300,7 +300,8 @@ export default function App() {
   const [detPed,    setDetPed]    = useState(null);
   const [confirm,   setConfirm]   = useState(null);
   const [toast,     setToast]     = useState(null);
-  const [fCli,      setFCli]      = useState({codigo:"",razonSocial:"",zona:"",telefono:"",lat:"",lng:""});
+  const FCLI_INIT = {ruc:"",razonSocial:"",nombreFantasia:"",zona:"",direccion:"",telefono:"",contacto:"",frecuencia:"semanal",observaciones:"",lat:"",lng:""};
+  const [fCli,      setFCli]      = useState(FCLI_INIT);
   const [login,     setLogin]     = useState({userId:"",pin:""});
 
   useEffect(()=>save(ST.cli,clientes),[clientes]);
@@ -372,11 +373,21 @@ export default function App() {
   };
 
   // ── CLIENTES ───────────────────────────────────────────────────
+  const FCLI_INIT = {ruc:"",razonSocial:"",nombreFantasia:"",zona:"",direccion:"",telefono:"",contacto:"",frecuencia:"semanal",observaciones:"",lat:"",lng:""};
+
   const guardarCli=()=>{
-    if(!fCli.codigo||!fCli.razonSocial){msg("Código y razón social requeridos","err");return;}
-    if(clientes.find(c=>c.codigo===fCli.codigo)){msg("Código ya existe","err");return;}
-    setClientes(p=>[...p,{...fCli,id:tsId()}]);
-    setFCli({codigo:"",razonSocial:"",zona:"",telefono:"",lat:"",lng:""}); setModal(null); msg("Cliente creado");
+    if(!fCli.ruc||!fCli.razonSocial){msg("RUC y razón social requeridos","err");return;}
+    if(clientes.find(c=>c.ruc===fCli.ruc)){msg("RUC ya existe","err");return;}
+    setClientes(p=>[...p,{...fCli,id:tsId(),codigo:fCli.ruc}]);
+    setFCli(FCLI_INIT); setModal(null); msg("Cliente creado ✓");
+  };
+
+  const capturarGPSCliente=async()=>{
+    try {
+      const pos=await getPos();
+      setFCli(p=>({...p,lat:pos.lat.toFixed(6),lng:pos.lng.toFixed(6)}));
+      msg("📍 Ubicación capturada ✓");
+    } catch { msg("No se pudo obtener GPS","err"); }
   };
 
   const importarClis=()=>{
@@ -385,10 +396,10 @@ export default function App() {
     lines.forEach(l=>{
       const p=l.split(/[,;\t]+/).map(s=>s.trim());
       if(p.length<2){err++;return;}
-      const [codigo,razonSocial,zona="",telefono="",lat="",lng=""]=p;
-      if(!codigo||!razonSocial){err++;return;}
-      if(!clientes.find(c=>c.codigo===codigo)&&!nuevos.find(c=>c.codigo===codigo))
-        nuevos.push({id:tsId(),codigo,razonSocial,zona,telefono,lat:parseFloat(lat)||"",lng:parseFloat(lng)||""});
+      const [ruc,razonSocial,zona="",telefono="",direccion="",nombreFantasia=""]=p;
+      if(!ruc||!razonSocial){err++;return;}
+      if(!clientes.find(c=>c.ruc===ruc)&&!nuevos.find(c=>c.ruc===ruc))
+        nuevos.push({id:tsId(),ruc,codigo:ruc,razonSocial,nombreFantasia,zona,telefono,direccion,contacto:"",frecuencia:"semanal",observaciones:"",lat:"",lng:""});
     });
     setClientes(p=>[...p,...nuevos]);
     setImpTxt(""); setModal(null); msg(`${nuevos.length} clientes importados${err?` (${err} errores)`:""}`);
@@ -721,6 +732,8 @@ export default function App() {
                       {tienePedido&&<span style={S.tag(C.grn,{fontSize:10})}>✓ Pedido</span>}
                     </div>
                     <div style={{fontWeight:700,fontSize:14}}>{c.razonSocial}</div>
+                    {c.nombreFantasia&&<div style={{fontSize:11,color:C.mut,fontStyle:"italic"}}>"{c.nombreFantasia}"</div>}
+                    {c.observaciones&&<div style={{fontSize:11,color:C.amb,marginTop:2}}>⚠ {c.observaciones}</div>}
                     {pedCli&&<div style={{fontSize:11,color:C.grn}}>{pedCli.items.length} prod. · {fmtGs(pedCli.total)}</div>}
                   </div>
                   <button style={S.btn(tienePedido?C.grn:C.r,{padding:"9px 13px",fontSize:12})}
@@ -961,16 +974,22 @@ export default function App() {
           const zona=ZONAS.find(z=>z.id===c.zona);
           return (
             <div key={c.id} style={{...S.card({padding:"12px 14px"}),display:"flex",alignItems:"center",gap:10}}>
-              <span style={S.bdg(C.r)}>#{c.codigo}</span>
               <div style={{flex:1}}>
-                <div style={{fontWeight:700,fontSize:13}}>{c.razonSocial}</div>
-                <div style={S.row({gap:6,marginTop:3,flexWrap:"wrap"})}>
+                <div style={S.row({marginBottom:3,flexWrap:"wrap",gap:6})}>
+                  <span style={S.bdg(C.r,{fontSize:10})}>RUC: {c.ruc||c.codigo}</span>
                   {zona&&<span style={S.tag(zona.color,{fontSize:10})}>{zona.nombre}</span>}
-                  {c.telefono&&<span style={{fontSize:11,color:C.mut}}>☎ {c.telefono}</span>}
                 </div>
+                <div style={{fontWeight:800,fontSize:14}}>{c.razonSocial}</div>
+                {c.nombreFantasia&&<div style={{fontSize:12,color:C.mut,fontStyle:"italic"}}>"{c.nombreFantasia}"</div>}
+                <div style={S.row({gap:8,marginTop:3,flexWrap:"wrap"})}>
+                  {c.direccion&&<span style={{fontSize:11,color:C.mut}}>📍 {c.direccion}</span>}
+                  {c.telefono&&<span style={{fontSize:11,color:C.mut}}>☎ {c.telefono}</span>}
+                  {c.contacto&&<span style={{fontSize:11,color:C.mut}}>👤 {c.contacto}</span>}
+                </div>
+                {c.observaciones&&<div style={{fontSize:11,color:C.amb,marginTop:3,background:"#FFF8EC",borderRadius:6,padding:"3px 7px"}}>⚠ {c.observaciones}</div>}
               </div>
               <button onClick={()=>setConfirm({msg:`¿Eliminar a ${c.razonSocial}?`,fn:()=>{setClientes(p=>p.filter(x=>x.id!==c.id));msg("Eliminado","warning");}})}
-                style={{background:"none",border:"none",color:"#D1D5DB",fontSize:18,cursor:"pointer"}}>✕</button>
+                style={{background:"none",border:"none",color:"#D1D5DB",fontSize:18,cursor:"pointer",flexShrink:0}}>✕</button>
             </div>
           );
         })}
@@ -981,16 +1000,47 @@ export default function App() {
 
       {modal==="addCli"&&<Modal onClose={()=>setModal(null)}>
         <div style={{fontWeight:800,fontSize:16,marginBottom:14,color:C.txt}}>Nuevo cliente</div>
-        {[["codigo","Código *"],["razonSocial","Razón Social *"],["telefono","Teléfono"]].map(([k,l])=>(
+        <div style={{fontWeight:700,fontSize:11,color:C.mut,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Datos fiscales</div>
+        {[["ruc","RUC / CI *"],["razonSocial","Razón Social *"],["nombreFantasia","Nombre Fantasía"]].map(([k,l])=>(
           <div key={k} style={{marginBottom:10}}><label style={S.lbl}>{l}</label>
             <input style={S.inp()} value={fCli[k]} onChange={e=>setFCli(p=>({...p,[k]:e.target.value}))}/></div>
         ))}
+        <div style={{fontWeight:700,fontSize:11,color:C.mut,margin:"12px 0 8px",textTransform:"uppercase",letterSpacing:.5}}>Ubicación</div>
         <div style={{marginBottom:10}}>
           <label style={S.lbl}>Zona</label>
           <select style={S.inp()} value={fCli.zona} onChange={e=>setFCli(p=>({...p,zona:e.target.value}))}>
             <option value="">Sin zona</option>
             {ZONAS.map(z=><option key={z.id} value={z.id}>{z.nombre} — {z.referencia}</option>)}
           </select>
+        </div>
+        <div style={{marginBottom:10}}><label style={S.lbl}>Dirección</label>
+          <input style={S.inp()} placeholder="Av. Principal 123, Luque" value={fCli.direccion} onChange={e=>setFCli(p=>({...p,direccion:e.target.value}))}/></div>
+        <div style={{marginBottom:10}}>
+          <label style={S.lbl}>Coordenadas GPS</label>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <input style={S.inp({flex:1})} placeholder="Lat" value={fCli.lat} onChange={e=>setFCli(p=>({...p,lat:e.target.value}))}/>
+            <input style={S.inp({flex:1})} placeholder="Lng" value={fCli.lng} onChange={e=>setFCli(p=>({...p,lng:e.target.value}))}/>
+            <button style={S.btn(C.grn,{padding:"10px 12px",fontSize:16,flexShrink:0})} onClick={capturarGPSCliente}>📍</button>
+          </div>
+        </div>
+        <div style={{fontWeight:700,fontSize:11,color:C.mut,margin:"12px 0 8px",textTransform:"uppercase",letterSpacing:.5}}>Contacto</div>
+        {[["telefono","Teléfono"],["contacto","Nombre del contacto"]].map(([k,l])=>(
+          <div key={k} style={{marginBottom:10}}><label style={S.lbl}>{l}</label>
+            <input style={S.inp()} value={fCli[k]} onChange={e=>setFCli(p=>({...p,[k]:e.target.value}))}/></div>
+        ))}
+        <div style={{fontWeight:700,fontSize:11,color:C.mut,margin:"12px 0 8px",textTransform:"uppercase",letterSpacing:.5}}>Operativa</div>
+        <div style={{marginBottom:10}}>
+          <label style={S.lbl}>Frecuencia de visita</label>
+          <select style={S.inp()} value={fCli.frecuencia} onChange={e=>setFCli(p=>({...p,frecuencia:e.target.value}))}>
+            <option value="diaria">Diaria</option>
+            <option value="2x_semana">2 veces por semana</option>
+            <option value="semanal">Semanal</option>
+            <option value="quincenal">Quincenal</option>
+          </select>
+        </div>
+        <div style={{marginBottom:14}}>
+          <label style={S.lbl}>Observaciones</label>
+          <textarea style={{...S.inp(),minHeight:80,resize:"vertical"}} placeholder="Ej: Cierra al mediodía. Solo recibe pedidos de 8 a 11hs. Paga los viernes." value={fCli.observaciones} onChange={e=>setFCli(p=>({...p,observaciones:e.target.value}))}/>
         </div>
         <div style={{display:"flex",gap:8}}>
           <button style={S.btn(C.r,{flex:1})} onClick={guardarCli}>Guardar</button>
@@ -1002,11 +1052,12 @@ export default function App() {
         <div style={{fontWeight:800,fontSize:16,marginBottom:8,color:C.txt}}>Importar clientes</div>
         <div style={{fontSize:12,color:C.mut,marginBottom:10,lineHeight:1.7}}>
           Una línea por cliente:<br/>
-          <code style={{background:"#F3F4F6",padding:"2px 6px",borderRadius:4,fontSize:11}}>CODIGO, RAZÓN SOCIAL, ZONA_ID, TELÉFONO</code><br/>
-          Zonas: Z1 Norte · Z2 Centro · Z3 Sur · Z4 Este · Z5 Oeste
+          <code style={{background:"#F3F4F6",padding:"2px 6px",borderRadius:4,fontSize:11}}>RUC, RAZÓN SOCIAL, ZONA_ID, TELÉFONO, DIRECCIÓN, NOMBRE FANTASÍA</code><br/>
+          Zonas: Z1 Norte · Z2 Centro · Z3 Sur · Z4 Este · Z5 Oeste<br/>
+          (solo RUC y razón social son obligatorios)
         </div>
         <textarea style={{...S.inp(),minHeight:160,resize:"vertical",fontFamily:"monospace",fontSize:12}}
-          placeholder={"41144, Lider Cuello Candia, Z2, 0981111222\n41539, Fátima Almacén, Z3\n52722, Alex Neorkel, Z1"} value={impTxt} onChange={e=>setImpTxt(e.target.value)}/>
+          placeholder={"4936450-2, Lider Cuello Candia, Z2, 0981111222, Av. Jose Felix Godoy, Lider\n41539, Fátima Almacén, Z3, 0982333444\n52722, Alex Neorkel, Z1"} value={impTxt} onChange={e=>setImpTxt(e.target.value)}/>
         <div style={{display:"flex",gap:8,marginTop:10}}>
           <button style={S.btn(C.r,{flex:1})} onClick={importarClis}>Importar</button>
           <button style={S.btn("#9CA3AF",{flex:1})} onClick={()=>setModal(null)}>Cancelar</button>
