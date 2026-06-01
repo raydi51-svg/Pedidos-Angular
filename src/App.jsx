@@ -70,8 +70,19 @@ const USUARIOS_INIT = [
 // STORAGE
 // ═══════════════════════════════════════════════════════════════════
 const ST = {cli:"ang_cli_v1",ped:"ang_ped_v1",vis:"ang_vis_v1",usr:"ang_usr_v1",cat:"ang_cat_v1"};
-const load = (k,fb) => { try { const v=window[k]; return v?JSON.parse(v):fb; } catch { return fb; } };
-const save = (k,d) => { try { window[k]=JSON.stringify(d); } catch {} };
+const load = (k,fb) => {
+  try {
+    const v = localStorage.getItem(k) || window[k];
+    return v ? JSON.parse(v) : fb;
+  } catch { return fb; }
+};
+const save = (k,d) => {
+  try {
+    const s = JSON.stringify(d);
+    localStorage.setItem(k, s);
+    window[k] = s;
+  } catch {}
+};
 
 // ═══════════════════════════════════════════════════════════════════
 // UTILS
@@ -404,9 +415,27 @@ export default function App() {
     setImpTxt(""); setModal(null); msg(`${nuevos.length} clientes importados${err?` (${err} errores)`:""}`);
   };
 
+  // ── USUARIOS ──────────────────────────────────────────────────
+  const guardarUsuario=()=>{
+    if(!fUsr.nombre||!fUsr.pin){msg("Nombre y PIN requeridos","err");return;}
+    if(fUsr.pin.length<4){msg("El PIN debe tener al menos 4 dígitos","err");return;}
+    const id=fUsr.nombre.toLowerCase().replace(/\s+/g,"-")+"-"+tsId().slice(0,4);
+    if(usuarios.find(u=>u.nombre.toLowerCase()===fUsr.nombre.toLowerCase())){msg("Ya existe un usuario con ese nombre","err");return;}
+    setUsuarios(p=>[...p,{...fUsr,id}]);
+    setFUsr({id:"",nombre:"",rol:"vendedor",pin:""});
+    setModal(null);
+    msg(`Usuario ${fUsr.nombre} creado ✓`);
+  };
+
+  const eliminarUsuario=(uid)=>{
+    if(uid===usuario.id){msg("No podés eliminarte a vos mismo","err");return;}
+    setUsuarios(p=>p.filter(u=>u.id!==uid));
+    msg("Usuario eliminado","warning");
+  };
+
   // ── PEDIDOS ────────────────────────────────────────────────────
   const iniciarPedido=async(cli)=>{
-    if(!jornadaActiva){msg("Debes iniciar la jornada primero","err");return;}
+    if(!jornadaActiva && !esAdmin){msg("Debes iniciar la jornada primero","err");return;}
     let gpsPos=null;
     try { gpsPos=await getPos(); } catch {}
     setPedCli(cli); setPedItems([]); setDevItems([]);
@@ -658,9 +687,7 @@ export default function App() {
     const pedHoy=pedidos.filter(p=>p.fecha===hoy()&&p.vendedorId===usuario.id);
     const clientesConPedido=new Set(pedHoy.map(p=>p.clienteCodigo));
     const rutaHoy=RUTA_SEMANAL[diaHoy()];
-    const clientesRuta=rutaHoy
-      ? clientes.filter(c=>rutaHoy.zonas.includes(c.zona))
-      : clientes;
+    // Sin filtro de zona — vendedor ve todos los clientes
 
     return (
       <div style={S.wrap}>
@@ -1152,6 +1179,69 @@ export default function App() {
       </div>
     );
   }
+
+  // ════════════════════════════════════════════════════════════════
+  // ── USUARIOS (solo admin)
+  // ════════════════════════════════════════════════════════════════
+  if(vista==="usuarios") return (
+    <div style={S.wrap}>
+      <Hdr title="👥 Usuarios" usuario={usuario} onLogout={logout}/>
+      <div style={S.body}>
+        <button style={S.btn(C.r,{width:"100%",marginBottom:12})} onClick={()=>setModal("addUsr")}>
+          + Nuevo vendedor / usuario
+        </button>
+
+        {usuarios.map(u=>(
+          <div key={u.id} style={{...S.card({padding:"12px 14px"}),display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:40,height:40,borderRadius:"50%",background:u.rol==="admin"?C.r:C.blu,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:16,flexShrink:0}}>
+              {u.nombre.charAt(0).toUpperCase()}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,fontSize:14}}>{u.nombre}</div>
+              <div style={S.row({gap:6,marginTop:2})}>
+                <span style={S.bdg(u.rol==="admin"?C.r:C.blu,{fontSize:10})}>{u.rol}</span>
+                <span style={{fontSize:11,color:C.mut}}>PIN: {"•".repeat(u.pin.length)}</span>
+              </div>
+            </div>
+            {u.id!==usuario.id&&(
+              <button onClick={()=>setConfirm({msg:`¿Eliminar a ${u.nombre}?`,fn:()=>eliminarUsuario(u.id)})}
+                style={{background:"none",border:"none",color:"#D1D5DB",fontSize:18,cursor:"pointer"}}>✕</button>
+            )}
+            {u.id===usuario.id&&<span style={S.tag(C.grn,{fontSize:10})}>Yo</span>}
+          </div>
+        ))}
+      </div>
+
+      {modal==="addUsr"&&<Modal onClose={()=>setModal(null)}>
+        <div style={{fontWeight:800,fontSize:16,marginBottom:14,color:C.txt}}>Nuevo usuario</div>
+        <div style={{marginBottom:10}}>
+          <label style={S.lbl}>Nombre completo</label>
+          <input style={S.inp()} placeholder="Ej: Carlos Rodríguez" value={fUsr.nombre} onChange={e=>setFUsr(p=>({...p,nombre:e.target.value}))}/>
+        </div>
+        <div style={{marginBottom:10}}>
+          <label style={S.lbl}>Rol</label>
+          <select style={S.inp()} value={fUsr.rol} onChange={e=>setFUsr(p=>({...p,rol:e.target.value}))}>
+            <option value="vendedor">Vendedor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div style={{marginBottom:6}}>
+          <label style={S.lbl}>PIN (mínimo 4 dígitos)</label>
+          <input type="password" maxLength={6} style={S.inp()} placeholder="••••" value={fUsr.pin} onChange={e=>setFUsr(p=>({...p,pin:e.target.value}))}/>
+        </div>
+        <div style={{fontSize:11,color:C.mut,marginBottom:16}}>
+          El vendedor usará este PIN para iniciar sesión en su celular.
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button style={S.btn(C.r,{flex:1})} onClick={guardarUsuario}>Crear usuario</button>
+          <button style={S.btn("#9CA3AF",{flex:1})} onClick={()=>setModal(null)}>Cancelar</button>
+        </div>
+      </Modal>}
+
+      <NavBar/><Toast t={toast}/>
+      {confirm&&<Confirm msg={confirm.msg} onOk={()=>{confirm.fn();setConfirm(null);}} onCancel={()=>setConfirm(null)}/>}
+    </div>
+  );
 
   return null;
 }
