@@ -1380,15 +1380,15 @@ export default function App() {
     const fmtGs2 = n => Number(n).toLocaleString("es-PY");
 
     // Texto para copiar/enviar
+    const linea75 = "-------------------------------------------------------------------";
     const textoResumen = [
-      `PEDIDO ANGULAR SA — ${hoy()}`,
-      `CANTIDAD  DESCRIPCION                              CODIGO           SUBTOTAL`,
-      `${"─".repeat(80)}`,
-      ...items.map(i => `${String(i.cant).padStart(8)}  ${i.desc.padEnd(40)} ${i.cod.padEnd(16)} ₲${fmtGs2(i.subtotal).padStart(12)}`),
-      `${"─".repeat(80)}`,
-      `${"TOTAL GENERAL".padEnd(68)} ₲${fmtGs2(total).padStart(12)}`,
-    ].join("
-");
+      "PEDIDO ANGULAR SA - " + hoy(),
+      "CANT  DESCRIPCION                                CODIGO",
+      linea75,
+      ...items.map(function(i){ return String(i.cant).padStart(4) + "  " + (i.desc + "                                        ").substring(0,40) + " " + i.cod + "  Gs." + fmtGs2(i.subtotal); }),
+      linea75,
+      "TOTAL GENERAL: Gs." + fmtGs2(total),
+    ].join("\n");
 
     return (
       <div style={S.wrap}>
