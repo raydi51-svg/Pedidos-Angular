@@ -55,6 +55,62 @@ const RUTA_SEMANAL = {
   "Viernes":  {zonas:["Z3","Z5"], foco:"Sur + shoppings"},
 };
 
+
+// ═══════════════════════════════════════════════════════════════════
+// MAPEO CÓDIGOS EDWARD (lista precios agosto 2022)
+// ═══════════════════════════════════════════════════════════════════
+const EDWARD_CODIGOS = {
+  "DGH":  {cod:"7840225030108", desc:"DISCO GRANDE P/ HORNO",          precio:8400},
+  "DMH":  {cod:"7840225010032", desc:"DISCO MEDIANO P/ HORNO",         precio:6500},
+  "DCH":  {cod:"7840225030337", desc:"DISCO CHICO P/ HORNO",           precio:4450},
+  "DGF":  {cod:"7840225010018", desc:"DISCO GRANDE P/ FREIR",          precio:5750},
+  "DMF":  {cod:"7840225010025", desc:"DISCO MEDIANO P/ FREIR",         precio:4450},
+  "DCF":  {cod:"7840225010049", desc:"DISCO CHICO P/ FREIR",           precio:3000},
+  "DMI":  {cod:"7840225030092", desc:"DISCO MEDIANO INTEGRAL",         precio:4450},
+  "PBL":  {cod:"7840225010100", desc:"PASCUALINA BLANCA",              precio:8100},
+  "PCR":  {cod:"7840225030122", desc:"PASCUALINA CRIOLLA",             precio:8100},
+  "PIN":  {cod:"7840225030382", desc:"PASCUALINA INTEGRAL",            precio:8100},
+  "PPE":  {cod:"7840225030078", desc:"PASCUALINA PERSONAL",            precio:4600},
+  "FID5": {cod:"7840225010063", desc:"FIDEOS X 500GR",                 precio:7300},
+  "FID1": {cod:"7840225030313", desc:"FIDEOS X KILO",                  precio:14500},
+  "NQS5": {cod:"7840225010056", desc:"ÑOQUIS X 500GR",                 precio:6600},
+  "NQS1": {cod:"7840225030306", desc:"ÑOQUIS X KILO",                  precio:13100},
+  "NQK":  {cod:"1.066",        desc:"ÑOQUIS SUELTOS X KILO",          precio:12650},
+  "LAS5": {cod:"7840225010070", desc:"LASAÑA X 500GR",                 precio:7450},
+  "LAS1": {cod:"7840225030504", desc:"LASAÑA X 1KG",                   precio:14800},
+  "RVC":  {cod:"7840225010087", desc:"RAVIOLES DE CARNE",              precio:24750},
+  "RVJQ": {cod:"7840225020154", desc:"RAVIOLES DE JAMON Y QUESO",      precio:24750},
+  "RVP":  {cod:"7840225010094", desc:"RAVIOLES DE POLLO",              precio:24750},
+  "RVVD": {cod:"7840225020147", desc:"RAVIOLES DE VERDURAS",           precio:24750},
+  "RVRC": {cod:"7840225020109", desc:"RAVIOLES DE RICOTA",             precio:24750},
+  "SJQ":  {cod:"7840225030245", desc:"SORRENTINOS JAMON Y QUESO",      precio:24750},
+  "SRC":  {cod:"7840225030269", desc:"SORRENTINOS RICOTA",             precio:24750},
+  "PMB5": {cod:"7840225020031", desc:"MIGA BLANCO X 500 GR",           precio:6900},
+  "PMB1": {cod:"7840225020048", desc:"MIGA BLANCO X 1KG",              precio:13800},
+  "PMI5": {cod:"7840225030634", desc:"MIGA INTEGRAL X 500 GR",         precio:6900},
+  "PMI1": {cod:"7840225030641", desc:"MIGA INTEGRAL X 1 KG",           precio:13800},
+  "PHI":  {cod:"7840225030764", desc:"PAN CON HARINA INTEGRAL X 400GR",precio:8250},
+  "PVI":  {cod:"7840225020086", desc:"PANCITO DE VIENA",               precio:6800},
+  "PHA":  {cod:"7840225020093", desc:"PAN P/ HAMBURGUESA",             precio:6800},
+  "PPZ":  {cod:"7840225020116", desc:"PRE-PIZZA",                      precio:4950},
+  "PPZA": {cod:"7840225030184", desc:"PRE-PIZZA ARTESANAL",            precio:5750},
+  "PINT": {cod:"7840225020017", desc:"PANCITO INTEGRAL",               precio:7000},
+  "PSC":  {cod:"7840225020024", desc:"PALITO ROSQUITA COQUITO X400GR", precio:7000},
+  "PINT2":{cod:"7840225030498", desc:"PALITOS INTEGRALES X 400GR",     precio:7000},
+  "PDS":  {cod:"7840225030740", desc:"PAN DOBLE SALVADO X 400 GR",     precio:8250},
+  "PLC":  {cod:"7840225030757", desc:"PAN LACTEADO X 400 GR",          precio:8250},
+  "KOK":  {cod:"7840225030276", desc:"KOKITIN X 400GR",                precio:10650},
+  "GRS":  {cod:"7840225030085", desc:"PALITO GRISSIN CON QUESO",       precio:10450},
+  "GAL":  {cod:"1.056",        desc:"GALLETITA A GRANEL X KILO",      precio:13500},
+  "GALE": {cod:"902",          desc:"GALLETITA A GRANEL ESPECIAL X KG",precio:18750},
+  "CH1":  {cod:"7840225030597", desc:"CHIPITAS EDWARD X 100 GR",       precio:6100},
+  "CH2":  {cod:"7840225030573", desc:"CHIPITAS EDWARD X 250 GR",       precio:13500},
+  "GLT":  {cod:"7840225030207", desc:"GALLETITAS DULCES X 400 GR",     precio:7150},
+  "907":  {cod:"907",          desc:"ALFAJORES/MEDIALUNAS X 6 UNID",  precio:15000},
+  "PST":  {cod:"1.007",        desc:"PALITOS SUELTOS X KILO",          precio:14000},
+  "BOC":  {cod:"1.073",        desc:"BIZCOCHUELO O PIONONO X KILO",   precio:30000},
+};
+
 const CATALOGO = [
   {codigo:"DGH", nombre:"Disco Grande Horno",        categoria:"Discos",      precio:8400,  iva:10},
   {codigo:"DMH", nombre:"Disco Mediano Horno",       categoria:"Discos",      precio:6500,  iva:5 },
@@ -483,9 +539,15 @@ export default function App() {
 
   // ── PEDIDOS ────────────────────────────────────────────────────
   const iniciarPedido=async(cli)=>{
-    if(!jornadaActiva && !esAdmin){msg("Debes iniciar la jornada primero","err");return;}
+    // Sin restricción de jornada durante formación de cartera
     let gpsPos=null;
     try { gpsPos=await getPos(); } catch {}
+    // Guardar GPS en el cliente si no tiene todavía
+    if(gpsPos && (!cli.lat || cli.lat==="")) {
+      const clienteActualizado = {...cli, lat:gpsPos.lat.toFixed(6), lng:gpsPos.lng.toFixed(6)};
+      setClientes(prev=>prev.map(c=>c.id===cli.id?clienteActualizado:c));
+      cli = clienteActualizado;
+    }
     setPedCli(cli); setPedItems([]); setDevItems([]);
     setPedGPS(gpsPos); setProdSel(null); setDevSel(null);
     setCantMap({}); setDevMap({});
@@ -652,31 +714,19 @@ export default function App() {
         <div style={S.body}>
 
           {/* Banner jornada */}
-          {!jornadaActiva ? (
-            <div style={S.card({background:C.rg,color:"#fff",padding:16})}>
+          <div style={S.card({background:C.rg,color:"#fff",padding:16})}>
               <div style={{fontSize:11,opacity:.75,marginBottom:2}}>{diaHoy().toUpperCase()} · {fmtFecha(hoy())}</div>
               {rutaHoy&&<div style={{fontSize:13,opacity:.8,marginBottom:10}}>🗺 {rutaHoy.foco}</div>}
-              <button style={S.btn("rgba(255,255,255,.25)",{width:"100%",fontSize:14,padding:13,border:"1px solid rgba(255,255,255,.4)"})} onClick={iniciarJornada}>
-                ▶ Iniciar jornada del día
-              </button>
-            </div>
-          ):(
-            <div style={S.card({background:"#F0FDF4",borderLeft:`4px solid ${C.grn}`,padding:14})}>
-              <div style={S.row({marginBottom:8})}>
-                <div style={{width:10,height:10,borderRadius:"50%",background:C.grn,boxShadow:`0 0 0 3px ${C.grn}44`,animation:"pulse 1.5s infinite"}}/>
-                <div style={{fontWeight:800,fontSize:14,color:C.grn}}>Jornada activa desde {jornadaActiva.horaInicio}</div>
-              </div>
-              {gpsActivo&&<div style={{fontSize:11,color:C.grn,marginBottom:8}}>📍 GPS activo · {recorrido.length} puntos registrados</div>}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-                <button style={S.btn(C.r,{fontSize:12,padding:"9px 8px"})} onClick={()=>setVista("ruta")}>
-                  📍 Ver ruta
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                <button style={S.btn("rgba(255,255,255,.25)",{fontSize:13,padding:12,border:"1px solid rgba(255,255,255,.4)"})} onClick={()=>setVista("ruta")}>
+                  📍 Ver clientes
                 </button>
-                <button style={S.btn("#6B7280",{fontSize:12,padding:"9px 8px"})} onClick={()=>setConfirm({msg:"¿Finalizar la jornada del día?",fn:finalizarJornada})}>
-                  ⏹ Finalizar
-                </button>
+                {!jornadaActiva
+                  ? <button style={S.btn("rgba(255,255,255,.25)",{fontSize:13,padding:12,border:"1px solid rgba(255,255,255,.4)"})} onClick={iniciarJornada}>▶ Iniciar GPS</button>
+                  : <button style={S.btn("rgba(255,255,255,.25)",{fontSize:13,padding:12,border:"1px solid rgba(255,255,255,.4)"})} onClick={()=>setConfirm({msg:"¿Finalizar la jornada?",fn:finalizarJornada})}>⏹ Fin jornada</button>
+                }
               </div>
             </div>
-          )}
 
           {/* Stats */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:4}}>
@@ -808,12 +858,26 @@ export default function App() {
                     <div style={{fontWeight:700,fontSize:14}}>{c.razonSocial}</div>
                     {c.nombreFantasia&&<div style={{fontSize:11,color:C.mut,fontStyle:"italic"}}>"{c.nombreFantasia}"</div>}
                     {c.observaciones&&<div style={{fontSize:11,color:C.amb,marginTop:2}}>⚠ {c.observaciones}</div>}
-                    {pedCli&&<div style={{fontSize:11,color:C.grn}}>{pedCli.items.length} prod. · {fmtGs(pedCli.total)}</div>}
+                    {c.direccion&&<div style={{fontSize:11,color:C.mut,marginTop:2}}>📍 {c.direccion}</div>}
+                    {c.lat&&<div style={{fontSize:10,color:C.grn,marginTop:1}}>🛰 {parseFloat(c.lat).toFixed(4)}, {parseFloat(c.lng).toFixed(4)}</div>}
+                    {pedCli&&<div style={{fontSize:11,color:C.grn,marginTop:2,fontWeight:700}}>{pedCli.items.length} prod. · {fmtGs(pedCli.total)}</div>}
                   </div>
-                  <button style={S.btn(tienePedido?C.grn:C.r,{padding:"9px 13px",fontSize:12})}
-                    onClick={()=>iniciarPedido(c)}>
-                    {tienePedido?"✎ Editar":"📝 Pedido"}
-                  </button>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    <button style={S.btn(tienePedido?C.grn:C.r,{padding:"9px 13px",fontSize:12})}
+                      onClick={()=>iniciarPedido(c)}>
+                      {tienePedido?"✎ Editar":"📝 Pedido"}
+                    </button>
+                    <button style={S.btn(c.lat?C.grn:"#9CA3AF",{padding:"6px 10px",fontSize:11})}
+                      onClick={async()=>{
+                        try {
+                          const pos=await getPos();
+                          setClientes(prev=>prev.map(x=>x.id===c.id?{...x,lat:pos.lat.toFixed(6),lng:pos.lng.toFixed(6)}:x));
+                          msg(`📍 Ubicación de ${c.nombreFantasia||c.razonSocial} guardada ✓`);
+                        } catch { msg("No se pudo obtener GPS","err"); }
+                      }}>
+                      {c.lat?"📍 GPS ✓":"📍 Capturar"}
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -1290,6 +1354,113 @@ export default function App() {
       {confirm&&<Confirm msg={confirm.msg} onOk={()=>{confirm.fn();setConfirm(null);}} onCancel={()=>setConfirm(null)}/>}
     </div>
   );
+
+  // ════════════════════════════════════════════════════════════════
+  // ── RESUMEN EDWARD
+  // ════════════════════════════════════════════════════════════════
+  if(vista==="edward") {
+    const pedHoy = pedidos.filter(p=>p.fecha===hoy());
+    const hora = new Date().getHours();
+    const okHora = hora < 13;
+
+    // Consolidar items de todos los pedidos de hoy
+    const map = {};
+    pedHoy.forEach(ped => (ped.items||[]).forEach(item => {
+      const edw = EDWARD_CODIGOS[item.codigo];
+      const key = edw ? edw.cod : item.codigo;
+      const desc = edw ? edw.desc : item.nombre;
+      const precio = edw ? edw.precio : item.precio;
+      if(!map[key]) map[key] = {cod:key, desc, precio, cant:0, subtotal:0};
+      map[key].cant += item.cantidad;
+      map[key].subtotal += item.cantidad * precio;
+    }));
+
+    const items = Object.values(map).sort((a,b) => a.desc.localeCompare(b.desc));
+    const total = items.reduce((s,i)=>s+i.subtotal,0);
+    const fmtGs2 = n => Number(n).toLocaleString("es-PY");
+
+    // Texto para copiar/enviar
+    const textoResumen = [
+      `PEDIDO ANGULAR SA — ${hoy()}`,
+      `CANTIDAD  DESCRIPCION                              CODIGO           SUBTOTAL`,
+      `${"─".repeat(80)}`,
+      ...items.map(i => `${String(i.cant).padStart(8)}  ${i.desc.padEnd(40)} ${i.cod.padEnd(16)} ₲${fmtGs2(i.subtotal).padStart(12)}`),
+      `${"─".repeat(80)}`,
+      `${"TOTAL GENERAL".padEnd(68)} ₲${fmtGs2(total).padStart(12)}`,
+    ].join("
+");
+
+    return (
+      <div style={S.wrap}>
+        <Hdr title="📋 Resumen Edward" usuario={usuario} onLogout={logout}/>
+        <div style={S.body}>
+
+          {/* Alerta horario */}
+          <div style={S.card({background:okHora?"#F0FDF4":"#FFF3CD",borderLeft:`4px solid ${okHora?C.grn:C.amb}`,padding:12,marginBottom:12})}>
+            <div style={{fontWeight:800,fontSize:14,color:okHora?C.grn:C.amb}}>
+              {okHora ? "✓ En horario — enviar antes de las 13:00hs" : "⚠ Pasó el horario límite (13:00hs)"}
+            </div>
+            <div style={{fontSize:11,color:C.mut,marginTop:2}}>
+              Hoy {hoy()} · {pedHoy.length} pedidos · {new Date().toLocaleTimeString("es-PY",{hour:"2-digit",minute:"2-digit"})}
+            </div>
+          </div>
+
+          {/* KPIs */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:12}}>
+            <div style={S.card({textAlign:"center",padding:12})}>
+              <div style={{fontSize:22,fontWeight:900,color:C.r}}>{pedHoy.length}</div>
+              <div style={{fontSize:10,color:C.mut}}>Pedidos</div>
+            </div>
+            <div style={S.card({textAlign:"center",padding:12})}>
+              <div style={{fontSize:22,fontWeight:900,color:C.blu}}>{items.length}</div>
+              <div style={{fontSize:10,color:C.mut}}>SKUs</div>
+            </div>
+            <div style={S.card({textAlign:"center",padding:12})}>
+              <div style={{fontSize:14,fontWeight:900,color:C.grn}}>{fmtGs(total)}</div>
+              <div style={{fontSize:10,color:C.mut}}>Total</div>
+            </div>
+          </div>
+
+          {/* Tabla */}
+          {items.length === 0
+            ? <div style={{...S.card(),textAlign:"center",color:C.mut,padding:36}}>Sin pedidos cargados hoy</div>
+            : <div style={S.card({padding:0,overflow:"hidden"})}>
+                <div style={{background:C.r,color:"#fff",padding:"10px 14px",fontWeight:800,fontSize:12,display:"grid",gridTemplateColumns:"40px 1fr 80px 70px",gap:6}}>
+                  <span>Cant</span><span>Descripción</span><span style={{textAlign:"right"}}>Subtotal</span><span style={{textAlign:"right",fontSize:10}}>Código</span>
+                </div>
+                {items.map((item,i)=>(
+                  <div key={item.cod} style={{padding:"9px 14px",borderBottom:`1px solid ${C.border}`,display:"grid",gridTemplateColumns:"40px 1fr 80px 70px",gap:6,background:i%2===0?"#fff":"#FAFAFA",fontSize:12}}>
+                    <span style={{fontWeight:900,color:C.r,fontSize:15}}>{item.cant}</span>
+                    <div>
+                      <div style={{fontWeight:700}}>{item.desc}</div>
+                      <div style={{fontSize:10,color:C.mut}}>{fmtGs(item.precio)} c/u</div>
+                    </div>
+                    <span style={{textAlign:"right",fontWeight:700,color:C.grn,fontSize:12}}>{fmtGs(item.subtotal)}</span>
+                    <span style={{textAlign:"right",fontSize:9,color:C.mut,wordBreak:"break-all"}}>{item.cod}</span>
+                  </div>
+                ))}
+                <div style={{padding:"12px 14px",background:"#1A1A1A",color:"#fff",display:"flex",justifyContent:"space-between",fontWeight:900,fontSize:15}}>
+                  <span>TOTAL</span>
+                  <span style={{color:"#4ADE80"}}>{fmtGs(total)}</span>
+                </div>
+              </div>
+          }
+
+          {/* Botón copiar */}
+          {items.length > 0 && (
+            <button style={S.btn(C.blu,{width:"100%",marginTop:12,padding:13,fontSize:14})}
+              onClick={()=>{
+                navigator.clipboard?.writeText(textoResumen).then(()=>msg("Resumen copiado ✓")).catch(()=>msg("No se pudo copiar","err"));
+              }}>
+              📋 Copiar resumen para enviar a Edward
+            </button>
+          )}
+        </div>
+        <NavBar/>
+        <Toast t={toast}/>
+      </div>
+    );
+  }
 
   return null;
 }
