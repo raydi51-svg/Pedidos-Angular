@@ -1,32 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDS0vRvdFDliURctzme6XYW2dUObUamphM",
-  authDomain: "angular-sa.firebaseapp.com",
-  projectId: "angular-sa",
-  storageBucket: "angular-sa.firebasestorage.app",
-  messagingSenderId: "168729577288",
-  appId: "1:168729577288:web:a893236f876b8f0d0f157d",
-  measurementId: "G-CDBYDJ7514"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
-
-// Helpers Firestore
-const fsGet = async (col) => {
-  const snap = await getDocs(collection(db, col));
-  return snap.docs.map(d => ({ ...d.data(), id: d.id }));
-};
-const fsSet = async (col, id, data) => {
-  await setDoc(doc(db, col, id), data);
-};
-const fsDel = async (col, id) => {
-  await deleteDoc(doc(db, col, id));
-};
-
+// Storage robusto con localStorage
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -154,12 +127,9 @@ const USUARIOS_INIT = [
 // ═══════════════════════════════════════════════════════════════════
 // STORAGE
 // ═══════════════════════════════════════════════════════════════════
-// Firebase collections
-const COLS = {cli:"clientes",ped:"pedidos",vis:"visitas",usr:"usuarios",cat:"catalogo"};
-
-// localStorage como cache local (fallback)
+const COLS = {cli:"ang_clientes",ped:"ang_pedidos",vis:"ang_visitas",usr:"ang_usuarios",cat:"ang_catalogo"};
 const loadLocal = (k,fb) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):fb; } catch { return fb; } };
-const saveLocal = (k,d) => { try { localStorage.setItem(k,JSON.stringify(d)); } catch {} };
+const saveLocal = (k,d) => { try { localStorage.setItem(k,JSON.stringify(d)); } catch(e){console.log(e);} };
 
 // ═══════════════════════════════════════════════════════════════════
 // UTILS
@@ -393,38 +363,10 @@ export default function App() {
   const [fCli,      setFCli]      = useState(FCLI_INIT);
   const [login,     setLogin]     = useState({userId:"",pin:""});
 
-  // Sincronizar con Firebase al cargar
-  useEffect(()=>{
-    const syncFromFirebase = async () => {
-      try {
-        const [clis, peds, usrs] = await Promise.all([
-          fsGet(COLS.cli), fsGet(COLS.ped), fsGet(COLS.usr)
-        ]);
-        if(clis.length > 0){ setClientes(clis); saveLocal(COLS.cli, clis); }
-        if(peds.length > 0){ setPedidos(peds); saveLocal(COLS.ped, peds); }
-        if(usrs.length > 0){ setUsuarios(usrs); saveLocal(COLS.usr, usrs); }
-      } catch(e) { console.log("Firebase sync error:", e); }
-    };
-    syncFromFirebase();
-  },[]);
-
-  // Guardar clientes en Firebase cuando cambian
-  useEffect(()=>{
-    saveLocal(COLS.cli, clientes);
-    clientes.forEach(c => fsSet(COLS.cli, c.id, c).catch(()=>{}));
-  },[clientes]);
-
-  // Guardar pedidos en Firebase cuando cambian
-  useEffect(()=>{
-    saveLocal(COLS.ped, pedidos);
-    pedidos.forEach(p => fsSet(COLS.ped, p.id, p).catch(()=>{}));
-  },[pedidos]);
-
-  // Guardar usuarios en Firebase cuando cambian
-  useEffect(()=>{
-    saveLocal(COLS.usr, usuarios);
-    usuarios.forEach(u => fsSet(COLS.usr, u.id, u).catch(()=>{}));
-  },[usuarios]);
+  useEffect(()=>saveLocal(COLS.cli,clientes),[clientes]);
+  useEffect(()=>saveLocal(COLS.ped,pedidos),[pedidos]);
+  useEffect(()=>saveLocal(COLS.vis,visitas),[visitas]);
+  useEffect(()=>saveLocal(COLS.usr,usuarios),[usuarios]);
 
   const msg = (m,tipo="ok")=>{ setToast({msg:m,tipo}); setTimeout(()=>setToast(null),2600); };
   const esAdmin = usuario?.rol==="admin";
@@ -770,7 +712,7 @@ export default function App() {
           </>}
         </div>
 
-        {modal==="det"&&detPed&&<Modal onClose={()=>setModal(null)}><DetallePedido ped={detPed} onClose={()=>setModal(null)} esAdmin={esAdmin} onEliminar={esAdmin?()=>setConfirm({msg:`¿Eliminar pedido de ${detPed.clienteNombre}?`,fn:()=>{fsDel(COLS.ped,detPed.id).catch(()=>{}); setPedidos(p=>p.filter(x=>x.id!==detPed.id));setModal(null);msg("Eliminado","warning");}}):null}/></Modal>}
+        {modal==="det"&&detPed&&<Modal onClose={()=>setModal(null)}><DetallePedido ped={detPed} onClose={()=>setModal(null)} esAdmin={esAdmin} onEliminar={esAdmin?()=>setConfirm({msg:`¿Eliminar pedido de ${detPed.clienteNombre}?`,fn:()=>{setPedidos(p=>p.filter(x=>x.id!==detPed.id));setModal(null);msg("Eliminado","warning");}}):null}/></Modal>}
         <NavBar/><Toast t={toast}/>
         {confirm&&<Confirm msg={confirm.msg} onOk={()=>{confirm.fn();setConfirm(null);}} onCancel={()=>setConfirm(null)}/>}
         <style>{`@keyframes pulse{0%,100%{box-shadow:0 0 0 3px ${C.grn}44}50%{box-shadow:0 0 0 6px ${C.grn}22}}`}</style>
@@ -1088,7 +1030,7 @@ export default function App() {
           </>}
         </div>
 
-        {modal==="det"&&detPed&&<Modal onClose={()=>setModal(null)}><DetallePedido ped={detPed} onClose={()=>setModal(null)} esAdmin={esAdmin} onEliminar={esAdmin?()=>setConfirm({msg:`¿Eliminar pedido?`,fn:()=>{fsDel(COLS.ped,detPed.id).catch(()=>{}); setPedidos(p=>p.filter(x=>x.id!==detPed.id));setModal(null);msg("Eliminado","warning");}}):null}/></Modal>}
+        {modal==="det"&&detPed&&<Modal onClose={()=>setModal(null)}><DetallePedido ped={detPed} onClose={()=>setModal(null)} esAdmin={esAdmin} onEliminar={esAdmin?()=>setConfirm({msg:`¿Eliminar pedido?`,fn:()=>{setPedidos(p=>p.filter(x=>x.id!==detPed.id));setModal(null);msg("Eliminado","warning");}}):null}/></Modal>}
         <NavBar/><Toast t={toast}/>
         {confirm&&<Confirm msg={confirm.msg} onOk={()=>{confirm.fn();setConfirm(null);}} onCancel={()=>setConfirm(null)}/>}
       </div>
@@ -1126,7 +1068,7 @@ export default function App() {
                 </div>
                 {c.observaciones&&<div style={{fontSize:11,color:C.amb,marginTop:3,background:"#FFF8EC",borderRadius:6,padding:"3px 7px"}}>⚠ {c.observaciones}</div>}
               </div>
-              <button onClick={()=>setConfirm({msg:`¿Eliminar a ${c.razonSocial}?`,fn:()=>{fsDel(COLS.cli,c.id).catch(()=>{}); setClientes(p=>p.filter(x=>x.id!==c.id));msg("Eliminado","warning");}})}
+              <button onClick={()=>setConfirm({msg:`¿Eliminar a ${c.razonSocial}?`,fn:()=>{setClientes(p=>p.filter(x=>x.id!==c.id));msg("Eliminado","warning");}})}
                 style={{background:"none",border:"none",color:"#D1D5DB",fontSize:18,cursor:"pointer",flexShrink:0}}>✕</button>
             </div>
           );
@@ -1285,7 +1227,7 @@ export default function App() {
           }
         </div>
 
-        {modal==="det"&&detPed&&<Modal onClose={()=>setModal(null)}><DetallePedido ped={detPed} onClose={()=>setModal(null)} esAdmin={esAdmin} onEliminar={esAdmin?()=>setConfirm({msg:`¿Eliminar pedido?`,fn:()=>{fsDel(COLS.ped,detPed.id).catch(()=>{}); setPedidos(p=>p.filter(x=>x.id!==detPed.id));setModal(null);msg("Eliminado","warning");}}):null}/></Modal>}
+        {modal==="det"&&detPed&&<Modal onClose={()=>setModal(null)}><DetallePedido ped={detPed} onClose={()=>setModal(null)} esAdmin={esAdmin} onEliminar={esAdmin?()=>setConfirm({msg:`¿Eliminar pedido?`,fn:()=>{setPedidos(p=>p.filter(x=>x.id!==detPed.id));setModal(null);msg("Eliminado","warning");}}):null}/></Modal>}
         <NavBar/><Toast t={toast}/>
         {confirm&&<Confirm msg={confirm.msg} onOk={()=>{confirm.fn();setConfirm(null);}} onCancel={()=>setConfirm(null)}/>}
       </div>
