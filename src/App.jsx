@@ -1152,19 +1152,21 @@ export default function App() {
   // ════════════════════════════════════════════════════════════════
   // INFORMES
   // ════════════════════════════════════════════════════════════════
+  // rankClis calculado fuera del if para evitar hook condicional
+  const rankClis = useMemo(()=>{
+    const m={};
+    pedFilt.forEach(p=>{
+      if(!m[p.clienteCodigo])m[p.clienteCodigo]={nombre:p.clienteNombre,codigo:p.clienteCodigo,total:0,pedidos:0,dev:0};
+      m[p.clienteCodigo].total+=p.total;
+      m[p.clienteCodigo].pedidos+=1;
+      m[p.clienteCodigo].dev+=(p.totalDevolucion||0);
+    });
+    return Object.values(m).sort((a,b)=>b.total-a.total).slice(0,10);
+  },[pedFilt]);
+
   if(vista==="informes"){
     const totPer=pedFilt.reduce((s,p)=>s+p.total,0);
     const totDevPer=pedFilt.reduce((s,p)=>s+(p.totalDevolucion||0),0);
-    const rankClis=useMemo(()=>{
-      const m={};
-      pedFilt.forEach(p=>{
-        if(!m[p.clienteCodigo])m[p.clienteCodigo]={nombre:p.clienteNombre,codigo:p.clienteCodigo,total:0,pedidos:0,dev:0};
-        m[p.clienteCodigo].total+=p.total;
-        m[p.clienteCodigo].pedidos+=1;
-        m[p.clienteCodigo].dev+=(p.totalDevolucion||0);
-      });
-      return Object.values(m).sort((a,b)=>b.total-a.total).slice(0,10);
-    },[pedFilt]);
 
     return (
       <div style={S.wrap}>
