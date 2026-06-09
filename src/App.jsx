@@ -784,7 +784,7 @@ export default function App() {
             <input style={S.inp()} placeholder="🔍 Buscar cliente..." value={busqPedCli} onChange={e=>setBusqPedCli(e.target.value)}/>
           </div>
 
-          {(busqPedCli?cliPedFilt:clientesRuta).slice(0,40).map(c=>{
+          {(busqPedCli?cliPedFilt:clientes).slice(0,40).map(c=>{
             const tienePedido=clientesConPedido.has(c.codigo);
             const pedCli=pedHoy.find(p=>p.clienteCodigo===c.codigo);
             const zona=ZONAS.find(z=>z.id===c.zona);
